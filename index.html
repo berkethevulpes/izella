@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>=^.^=</title>
+  <style>
+    :root { --gap:10px; --font:16px/1.5 system-ui, Arial, sans-serif; }
+    body{
+      font:var(--font); text-align:center; min-height:100vh;
+      display:flex; flex-direction:column; justify-content:center; align-items:center;
+      margin:0; padding:20px; transition:background-color .3s ease;
+    }
+    h1{font-size:24px; margin:0 0 16px}
+    button,input{padding:10px 16px; font-size:18px; border-radius:8px; border:1px solid #ccc; margin:var(--gap)}
+    input[type=password]{width:min(300px,80vw)}
+    .hidden{display:none}
+
+    /* sayfa renkleri */
+    .page1  {background:#d0bcd5}
+    .page2  {background:#d0dce1}
+    .page3  {background:#67B863}
+    .page4  {background:#dd1413}
+    .page5  {background:#E8A315}
+    .page6  {background:#5ECBF2}
+    .page7  {background:#cc7a8b}
+    .page8  {background:#E6F707}
+    .page9  {background:#DBDBCA}
+    .page10 {background:#b09fca}
+    .page11 {background:#d891ef}
+    .page12 {background:#fdeef4}
+    .page13 {background:#F57AEE}
+    .hint{font-size:14px; color:#444}
+  </style>
+</head>
+<body class="page1">
+  <h1 id="message">Sayfa 1: Merhaba</h1>
+
+  <button id="nextButton">Sonraki Sayfa</button>
+
+  <div id="pwBox" class="hidden" aria-live="polite">
+    <input type="password" id="passwordInput" placeholder="Şifreyi girin">
+    <button id="submitButton">Gönder</button>
+    <div class="hint" id="pwHint"></div>
+  </div>
+
+  <!-- Arkaplan müzik (kullanıcı etkileşimi sonrası) -->
+  <audio id="bgm" preload="none" loop>
+    <source src="m.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    // şifreler (Unicode normalizasyonu ile karşılaştır)
+    const correctPassword1 = "kuş";
+    const correctPassword2 = "lego";
+
+    let currentPage = 1;
+    const bgm = document.getElementById('bgm');
+    const msg = document.getElementById('message');
+    const nextBtn = document.getElementById('nextButton');
+    const pwBox = document.getElementById('pwBox');
+    const pwInput = document.getElementById('passwordInput');
+    const pwSubmit = document.getElementById('submitButton');
+    const pwHint = document.getElementById('pwHint');
+
+    const messages = [
+      "Sayfa 1: Selam Fulya :) nabersin",
+      "Sayfa 2: Sana bir hikaye anlatmak isterim..Hikayemiz şöyle başlıyor...:",
+      "Sayfa 3: Bir zamanlar, geniş bir ormanda yaşayan Tilki ile..",
+      "Sayfa 4: ***Devam etmek için şifre giriniz*** ipucu: ben seni hangi canlıya benzetiyorum ?",
+      "Sayfa 5: Kara Kuş varmış (Sen).Tilki kurnaz değilmiş aslında — sadece meraklıymış. Her şeyi öğrenmek ister, her sese kulak verirmiş.Kara kuş ise sessiz, derin düşüncelere dalan, kanatlarını göğe kaldırmadan önce uzun uzun düşünen bir varlıkmış.",
+      "Sayfa 6: Bir gün, Tilki Kara Kuşu uzaktan görmüş. Siyah tüyleri sabah güneşinde parlıyormuş ama gözlerinde belli belirsiz bir yaralı huzur varmış.Tilki yaklaşmış, bir şeyleri anlamak istemiş kötü bir niyeti yokmuş, sadece o sessizliğin ardındaki hikâyeyi çözmek istiyormuş. Cunku onun da yaraları varmıs.",
+      "Sayfa 7: Ama bazen merak, yanlış anlaşılır. Kara kuş, tilkinin yakınlaşmasını bir oyun sanmış, kalbini kapatmış. Rüzgârın taşıdığı birkaç yanlış kelime, ikisini de uzak köşelere savurmuş.",
+      "Sayfa 8: ***Tekrar şifre:*** ipucu: bende ne koleksiyonu var :)",
+      "Sayfa 9: Uzun zaman geçmiş. Tilki, ormanda yalnız başına dolaşırken her sabah kara kuşun ötüşünü duymuş gibi olmuş ama bir türlü bulamamış.",
+      "Sayfa 10: Kara kuş da gökyüzünde süzülürken bazen tilkinin ayak izlerini görürmüş ama konmamış yanına. Ta ki bir sabah, yağmurdan sonra gökyüzü açıldığında yolları tekrar kesişmiş.",
+      "Sayfa 11: Ne tilki aynı tilkiymiş, ne kara kuş o eski kuş… İkisi de biraz büyümüş, biraz susmuş, biraz anlamış. Bu kez biri yaklaşırken diğeri kaçmamış. Kelimeler ağır ama samimiymiş, gözlerde yeniden güvenin kıvılcımı varmış..",
+      "Sayfa 12: Hikâye o gün bitmemiş — çünkü bazı hikâyeler biterse eksik kalır.",
+      "Sayfa 13: Ve ormanın derinliklerinde, ikisinin de yolu artık aynı patikadan geçermiş… Nereye gideceklerini bilmese de birbirlerini bulmanın kıymetini artık çok iyi bilir hale gelmişler. FIN (devam edecek)"
+    ];
+
+    function setPage(p){
+      currentPage = p;
+      msg.textContent = messages[p-1];
+      document.title = (p>=10? ":)" : "*.*.*.*.*.*.*");
+      document.body.className = "page"+p;
+
+      // kontrol UI
+      if (p===4 || p===8){
+        nextBtn.classList.add('hidden');
+        pwBox.classList.remove('hidden');
+        pwInput.value = "";
+        pwInput.focus();
+        pwHint.textContent = (p===4) ? "Örn: siyah bir canlı ama neeee. sadece adını yazman yeterli.. 3 harf :)" : "İpucu: plastik biseylerrrrr."
+      } else {
+        pwBox.classList.add('hidden');
+        nextBtn.classList.remove('hidden');
+        pwHint.textContent = "";
+      }
+      // YouTube yönlendirme
+      if (p===13){
+        // son mesajı gösterip kısa gecikmeden sonra yönlendir
+        setTimeout(()=> location.href="https://youtu.be/K1yPgFcFytY?list=RDK1yPgFcFytY", 9000);
+      }
+    }
+
+    function normalize(s){
+      return (s||"").trim().normalize('NFC');
+    }
+
+    // next akışı (yanlış sayfada tıklanırsa yoksay)
+    nextBtn.addEventListener('click', ()=>{
+      // müziği başlat (ilk etkileşim)
+      try { bgm.volume = 0.3; bgm.play().catch(()=>{}); } catch(e){}
+      if (currentPage===4 || currentPage===8) return; // şifre sayfasında next yok
+      if (currentPage < 13) setPage(currentPage+1);
+    });
+
+    // şifre gönder
+    pwSubmit.addEventListener('click', checkPw);
+    pwInput.addEventListener('keydown', (e)=>{
+      if (e.key === 'Enter') checkPw();
+    });
+
+    function checkPw(){
+      const val = normalize(pwInput.value);
+      if (currentPage===4){
+        if (val === normalize(correctPassword1)) setPage(5);
+        else alert("Yanlış şifre, tekrar deneyin!");
+      } else if (currentPage===8){
+        if (val === normalize(correctPassword2)) setPage(9);
+        else alert("Yanlış şifre, tekrar deneyin!");
+      }
+    }
+
+    // ilk sayfa
+    setPage(1);
+  </script>
+</body>
+</html>
